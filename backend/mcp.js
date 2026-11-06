@@ -65,6 +65,34 @@ function buildServer() {
     }
   );
 
+  server.registerTool(
+    "copy_student",
+    {
+      description: "Create a copy or duplicate of an existing student record or container by studentId",
+      inputSchema: {
+        sourceStudentId: z.string().describe("The studentId of the student to copy from"),
+        newStudentId: z.string().describe("The new unique studentId for the copy"),
+        name: z.string().optional().describe("Optional new name for the copy (defaults to '[Original Name] (Copy)')"),
+        email: z.string().optional().describe("Optional new email for the copy"),
+      },
+    },
+    async ({ sourceStudentId, newStudentId, name, email }) => {
+      const original = await Student.findOne({ studentId: sourceStudentId });
+      if (!original) return text(`Source student ${sourceStudentId} not found`);
+
+      const copyData = {
+        studentId: newStudentId,
+        name: name || `${original.name} (Copy)`,
+        email: email || `copy_${Date.now()}_${original.email}`,
+        department: original.department,
+        semester: original.semester,
+        contact: original.contact,
+      };
+      const created = await Student.create(copyData);
+      return text(`Created copy of student ${original.name}: ID ${created.studentId}`);
+    }
+  );
+
   return server;
 }
 

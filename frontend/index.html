@@ -292,9 +292,10 @@
         });
         const td = document.createElement("td"); td.className = "btns";
         const ed = Object.assign(document.createElement("button"), { className: "ghost", textContent: "Edit" });
+        const cp = Object.assign(document.createElement("button"), { className: "ghost", textContent: "Copy" });
         const del = Object.assign(document.createElement("button"), { className: "danger", textContent: "Delete" });
-        ed.onclick = () => startEdit(i); del.onclick = () => remove(i);
-        td.append(ed, del); tr.appendChild(td); body.appendChild(tr);
+        ed.onclick = () => startEdit(i); cp.onclick = () => copyRecord(i); del.onclick = () => remove(i);
+        td.append(ed, cp, del); tr.appendChild(td); body.appendChild(tr);
       });
     }
 
@@ -303,6 +304,18 @@
       keys.forEach((k) => ($("#" + k).value = s[k] ?? ""));
       $("#formTitle").textContent = "Edit student"; $("#saveBtn").textContent = "Save changes";
       $("#cancelBtn").hidden = false; $("#studentId").focus();
+    }
+
+    function copyRecord(i) {
+      const s = students[i]; editingId = null;
+      keys.forEach((k) => ($("#" + k).value = s[k] ?? ""));
+      $("#studentId").value = s.studentId + "-COPY";
+      $("#name").value = s.name + " (Copy)";
+      $("#email").value = "copy." + s.email;
+      $("#formTitle").textContent = "Add student (Copy of " + s.studentId + ")";
+      $("#saveBtn").textContent = "Add student";
+      $("#cancelBtn").hidden = false;
+      $("#studentId").focus();
     }
 
     function resetForm() {

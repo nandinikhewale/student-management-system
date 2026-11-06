@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  student-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: student-management-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb+srv://studentuser:MCPproject1@cluster0.zppnopw.mongodb.net/studentDB?retryWrites=true&w=majority
+      - FRONTEND_URL=http://localhost:3000,http://127.0.0.1:5500,https://student-management-system-frontend-nu-navy.vercel.app
+      - MCP_SECRET=MCP_project_1_key
+    restart: unless-stopped
