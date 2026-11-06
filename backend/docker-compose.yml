@@ -1,4 +1,5 @@
 services:
+  # Primary Backend Container
   api:
     build: .
     container_name: student-api
@@ -10,7 +11,19 @@ services:
       - mongo
     restart: unless-stopped
 
-  # Local MongoDB so the copy is fully self-contained.
+  # Copy Container of Backend (student-api-copy)
+  api-copy:
+    build: .
+    container_name: student-api-copy
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  # Local MongoDB for self-contained local testing.
   # To use MongoDB Atlas instead, set MONGODB_URI in .env to your Atlas string
   # and remove this service and the depends_on above.
   mongo:

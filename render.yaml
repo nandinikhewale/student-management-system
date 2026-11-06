@@ -1,0 +1,34 @@
+services:
+  # Primary Backend Container on Render
+  - type: web
+    name: student-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: MCP_SECRET
+        sync: false
+
+  # Copy Container of Backend on Render
+  - type: web
+    name: student-api-copy
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: MCP_SECRET
+        sync: false

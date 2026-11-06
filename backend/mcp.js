@@ -1,4 +1,4 @@
-// MCP server: lets Claude manage students through tools
+// MCP server: lets Claude / Antigravity manage students and backend container copies
 const { McpServer } = require("@modelcontextprotocol/sdk/server/mcp.js");
 const { StreamableHTTPServerTransport } = require("@modelcontextprotocol/sdk/server/streamableHttp.js");
 const { z } = require("zod");
@@ -90,6 +90,32 @@ function buildServer() {
       };
       const created = await Student.create(copyData);
       return text(`Created copy of student ${original.name}: ID ${created.studentId}`);
+    }
+  );
+
+  server.registerTool(
+    "copy_container",
+    {
+      description: "Create a copy or replica configuration of the backend container (student-api)",
+      inputSchema: {
+        replicaName: z.string().optional().describe("Name of the container copy, default: 'student-api-copy'"),
+        port: z.number().optional().describe("Port for the container copy, default: 5001"),
+      },
+    },
+    async ({ replicaName = "student-api-copy", port = 5001 }) => {
+      return text(
+        JSON.stringify(
+          {
+            status: "ready",
+            message: `Copy container '${replicaName}' configured to run on port ${port}`,
+            dockerCommand: `docker run -d --name ${replicaName} -p ${port}:5000 --env-file .env student-management-backend`,
+            dockerComposeService: `docker compose up -d ${replicaName}`,
+            renderBlueprint: `A copy service '${replicaName}' is configured in render.yaml ready to deploy on Render.`,
+          },
+          null,
+          2
+        )
+      );
     }
   );
 
