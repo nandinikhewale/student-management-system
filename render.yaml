@@ -1,8 +1,11 @@
 services:
-  # Primary Backend Container on Render
+  # Primary Backend Container
   - type: web
     name: student-api
     runtime: node
+    region: oregon
+    plan: free
+    branch: main
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
@@ -16,10 +19,13 @@ services:
       - key: MCP_SECRET
         sync: false
 
-  # Copy Container of Backend on Render
+  # Copy Container of Backend (student-api-copy)
   - type: web
     name: student-api-copy
     runtime: node
+    region: oregon
+    plan: free
+    branch: main
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
