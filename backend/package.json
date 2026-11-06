@@ -2,7 +2,10 @@
   "name": "student-api",
   "version": "1.0.0",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js",
+    "start:copy": "node -e \"process.env.PORT=5001; require('./server.js')\""
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "cors": "^2.8.5",
