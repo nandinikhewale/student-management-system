@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    container_name: student-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  # Local MongoDB so the copy is fully self-contained.
+  # To use MongoDB Atlas instead, set MONGODB_URI in .env to your Atlas string
+  # and remove this service and the depends_on above.
+  mongo:
+    image: mongo:7
+    container_name: student-mongo
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
