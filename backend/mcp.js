@@ -119,6 +119,86 @@ function buildServer() {
     }
   );
 
+  server.registerTool(
+    "deploy_render_copy",
+    {
+      description: "Deploy a live copy container of student-api directly to Render via the Render API",
+      inputSchema: {
+        apiKey: z.string().describe("Render API Key (from https://dashboard.render.com/u/settings#api-keys)"),
+        serviceName: z.string().optional().describe("Name of the copy container, default: 'student-api-copy'"),
+        region: z.string().optional().describe("Render region, default: 'oregon'"),
+      },
+    },
+    async ({ apiKey, serviceName = "student-api-copy", region = "oregon" }) => {
+      try {
+        const headers = {
+          Authorization: `Bearer ${apiKey.trim()}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        };
+
+        const ownersRes = await fetch("https://api.render.com/v1/owners", { headers });
+        if (!ownersRes.ok) {
+          const err = await ownersRes.text();
+          return text(`Authentication error with Render API: ${err}`);
+        }
+        const owners = await ownersRes.json();
+        const ownerId = owners[0]?.owner?.id || owners[0]?.id;
+        if (!ownerId) return text("No Render workspace/owner found for this account.");
+
+        const payload = {
+          type: "web_service",
+          name: serviceName,
+          ownerId,
+          repo: "https://github.com/nandinikhewale/student-management-system",
+          branch: "main",
+          rootDir: "backend",
+          autoDeploy: "yes",
+          envVars: [
+            { key: "PORT", value: "5000" },
+            { key: "MONGODB_URI", value: process.env.MONGODB_URI || "mongodb+srv://studentuser:MCPproject1@cluster0.zppnopw.mongodb.net/studentDB?retryWrites=true&w=majority" },
+            { key: "FRONTEND_URL", value: process.env.FRONTEND_URL || "https://student-management-system-frontend-nu-navy.vercel.app" },
+            { key: "MCP_SECRET", value: process.env.MCP_SECRET || "MCP_project_1_key" },
+          ],
+          serviceDetails: {
+            env: "node",
+            plan: "free",
+            region,
+            buildCommand: "npm install",
+            startCommand: "node server.js",
+          },
+        };
+
+        const createRes = await fetch("https://api.render.com/v1/services", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload),
+        });
+
+        const data = await createRes.json();
+        if (!createRes.ok) {
+          return text(`Render API returned ${createRes.status}: ${JSON.stringify(data, null, 2)}`);
+        }
+
+        return text(
+          JSON.stringify(
+            {
+              status: "success",
+              message: `Created live container '${serviceName}' on Render successfully!`,
+              id: data.id,
+              serviceUrl: data.serviceDetails?.url || `https://${data.slug}.onrender.com`,
+              dashboardUrl: `https://dashboard.render.com/web/${data.id}`,
+            },
+            null,
+            2
+          )
+        );
+      } catch (err) {
+        return text(`Deployment failed: ${err.message}`);
+      }
+    }
+  );
+
   return server;
 }
 
